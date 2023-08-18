@@ -13,9 +13,9 @@ These instructions will provide guidance on setting up the test suite on your lo
 - pytest
 
 ### Installation
-1. Clone the repository
-2. Navigate to the project directory:
-   > `cd ui-test/tests/`
+1. Install virtualenv https://virtualenv.pypa.io/en/stable/installation.html
+2. Navigate to the project directory after cloning the repo:
+   > `cd ui-test/`
 3. Install the required dependencies:
    > `pip install -r requirements.txt`
 4. Install Playwright drivers:
