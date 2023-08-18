@@ -14,6 +14,7 @@ def test_sports_search(page):
     # Get the first and last heading from the search results
     links = page.query_selector_all('a[href^="https://www.bbc.co.uk/programmes/"]')
     
+    # Grabbing the first and last link from the page
     if links:
         first_headline = links[0].inner_text()
         last_headline = links[-1].inner_text()

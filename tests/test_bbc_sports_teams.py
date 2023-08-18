@@ -1,6 +1,7 @@
 def test_bbc_football_fixtures(page):
     page.goto('https://www.bbc.co.uk/sport/football/scores-fixtures')
 
+    line = '-----------------------' * 3
     # Wait for the specific selector to be visible on the page
     page.wait_for_selector('.qa-full-team-name')
 
@@ -11,15 +12,20 @@ def test_bbc_football_fixtures(page):
     assert fixtures, "No matches today."
 
     print('\n')
-    print('-----------------------')
+    print(line)
     print('Teams playing today:')
-    print('-----------------------')
+    print(line)
     print('\n')
-    for fixture in fixtures:
-        home_team = fixture.query_selector('.sp-c-fixture__team-name--home').inner_text()
-        away_team = fixture.query_selector('.sp-c-fixture__team-name--away').inner_text()
-        
-        print(f'{home_team} vs {away_team}')
 
-    print('-----------------------')
+    # Looping through the fixtures and displaying the teams
+    for fixture in fixtures:
+        teams = fixture.query_selector_all('.qa-full-team-name')
+        home_team = teams[0].inner_text() if teams and len(teams) > 0 else None
+        away_team = teams[1].inner_text() if teams and len(teams) > 1 else None
+
+        if home_team and away_team:
+            print(f'{home_team} vs {away_team}')
+
+
+    print(line)
     print(f'Total number of teams playing today: {total_teams_playing}')
