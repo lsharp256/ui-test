@@ -1,49 +1,73 @@
-def test_login_negative_scenarios(page):
-    page.goto('https://www.bbc.co.uk/sport/football/scores-fixtures')
+import pytest
+from playwright.sync_api import Page, expect
 
-    # Click on the 'Sign in' button
-    page.locator('#idcta-username').click()
+SCORES_FIXTURES_URL = "https://www.bbc.co.uk/sport/football/scores-fixtures"
+USERNAME_INPUT_SELECTOR = "#user-identifier-input"
+PASSWORD_INPUT_SELECTOR = "#password-input"
+SUBMIT_BUTTON_SELECTOR = "#submit-button"
+ERROR_SELECTORS = (
+    "#form-message-username",
+    "#form-message-password",
+    ".form-message--general",
+)
 
-    # Negative scenarios to test
-    scenarios = [
-        {'username': '', 'password': '', 'expected_error': "Something's missing. Please check and try again."},
-        {'username': '', 'password': 'valid_password', 'expected_error': "Something's missing. Please check and try again."},
-        {'username': 'valid_username', 'password': '12312', 'expected_error': "Sorry, that password is too short. It needs to be eight characters or more."},
-        {'username': 'valid_username', 'password': 'asdasdasdasdasdasd', 'expected_error': "Sorry, that password isn't valid. Please include something that isn't a letter."},
-        {'username': 'valid_username', 'password': '12312,./,.', 'expected_error': "Sorry, that password isn't valid. Please include a letter."},
-        {'username': 'incorrect_username', 'password': 'incorrect_password', 'expected_error': "Looks like either the email/username or password is wrong. Try again, reset your password or get help."},
-        {'username': 'bad@@email.com', 'password': '', 'expected_error': "Sorry, that email doesn’t look right. Please check it's a proper email."},
-        {'username': 'bad@email', 'password': '', 'expected_error': "Sorry, that email doesn’t look right. Please check it's a proper email."},
-        # Add more scenarios as needed
-    ]
+SCENARIOS = [
+    ("", "", "Something's missing. Please check and try again."),
+    ("", "valid_password", "Something's missing. Please check and try again."),
+    (
+        "valid_username",
+        "12312",
+        "Sorry, that password is too short. It needs to be eight characters or more.",
+    ),
+    (
+        "valid_username",
+        "asdasdasdasdasdasd",
+        "Sorry, that password isn't valid. Please include something that isn't a letter.",
+    ),
+    (
+        "valid_username",
+        "12312,./,.",
+        "Sorry, that password isn't valid. Please include a letter.",
+    ),
+    (
+        "incorrect_username",
+        "incorrect_password",
+        "Looks like either the email/username or password is wrong. Try again, reset your password or get help.",
+    ),
+    (
+        "bad@@email.com",
+        "",
+        "Sorry, that email doesn’t look right. Please check it's a proper email.",
+    ),
+    (
+        "bad@email",
+        "",
+        "Sorry, that email doesn’t look right. Please check it's a proper email.",
+    ),
+]
 
-    for scenario in scenarios:
-        # Enter the username and password
-        page.fill('#user-identifier-input', scenario['username'])
-        page.fill('#password-input', scenario['password'])
 
-        # Click the Sign in
-        page.click('#submit-button')
+def get_visible_error_message(page: Page) -> str:
+    page.wait_for_selector(", ".join(ERROR_SELECTORS))
 
-        # Define the selectors for username, password, and general error messages
-        username_error_selector = '#form-message-username'
-        password_error_selector = '#form-message-password'
-        general_error_selector = '.form-message--general'
+    for selector in ERROR_SELECTORS:
+        error_message = page.locator(selector)
+        if error_message.is_visible():
+            return error_message.inner_text().strip()
 
-        # Wait for one of the error messages to appear
-        page.wait_for_selector(f"{username_error_selector}, {password_error_selector}, {general_error_selector}")
+    raise AssertionError("No login error message was displayed.")
 
-        # Verify the error message
-        actual_error_message = ''
-        username_error_element = page.query_selector(username_error_selector)
-        password_error_element = page.query_selector(password_error_selector)
-        general_error_element = page.query_selector(general_error_selector)
 
-        if username_error_element:
-            actual_error_message = username_error_element.inner_text()
-        elif password_error_element:
-            actual_error_message = password_error_element.inner_text()
-        elif general_error_element:
-            actual_error_message = general_error_element.inner_text()
+@pytest.mark.parametrize(("username", "password", "expected_error"), SCENARIOS)
+def test_login_negative_scenarios(
+    page: Page, username: str, password: str, expected_error: str
+) -> None:
+    page.goto(SCORES_FIXTURES_URL, wait_until="domcontentloaded")
+    page.locator("#idcta-username").click()
 
-        assert actual_error_message == scenario['expected_error'], f"Expected: {scenario['expected_error']} but got: {actual_error_message}"
+    page.locator(USERNAME_INPUT_SELECTOR).fill(username)
+    page.locator(PASSWORD_INPUT_SELECTOR).fill(password)
+    page.locator(SUBMIT_BUTTON_SELECTOR).click()
+
+    assert get_visible_error_message(page) == expected_error
+    expect(page.locator(USERNAME_INPUT_SELECTOR)).to_be_visible()

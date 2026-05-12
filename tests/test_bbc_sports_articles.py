@@ -1,26 +1,26 @@
-def test_sports_search(page):
-    # Navigate to the URL
-    page.goto("https://www.bbc.com/sport/football/scores-fixtures")
+from playwright.sync_api import Page, expect
 
-    # Locate the search bar and type 'sports'
-    page.locator('.ux-v5').click()
-    search_bar = page.locator('#search-input')
-    search_bar.fill('sports')
-    search_bar.press('Enter')
+SCORES_FIXTURES_URL = "https://www.bbc.co.uk/sport/football/scores-fixtures"
+SEARCH_BUTTON_SELECTOR = ".ux-v5"
+SEARCH_INPUT_SELECTOR = "#search-input"
+RESULT_LINK_SELECTOR = 'a[href^="https://www.bbc.co.uk/programmes/"]'
 
-    # Wait for the search results to load
-    page.wait_for_load_state('networkidle')
 
-    # Get the first and last heading from the search results
-    links = page.query_selector_all('a[href^="https://www.bbc.co.uk/programmes/"]')
-    
-    # Grabbing the first and last link from the page
-    if links:
-        first_headline = links[0].inner_text()
-        last_headline = links[-1].inner_text()
+def test_sports_search(page: Page) -> None:
+    page.goto(SCORES_FIXTURES_URL, wait_until="domcontentloaded")
 
-        print("\n")
-        print("First search result:", first_headline)
-        print("Last search result:", last_headline)
-    else:
-        print("No search results found.")
+    page.locator(SEARCH_BUTTON_SELECTOR).click()
+    search_bar = page.locator(SEARCH_INPUT_SELECTOR)
+    expect(search_bar).to_be_visible()
+
+    search_bar.fill("sports")
+    search_bar.press("Enter")
+    page.wait_for_load_state("networkidle")
+
+    result_links = page.locator(RESULT_LINK_SELECTOR)
+    expect(result_links.first).to_be_visible()
+
+    result_count = result_links.count()
+    assert result_count > 0
+    assert result_links.nth(0).inner_text().strip()
+    assert result_links.nth(result_count - 1).inner_text().strip()
