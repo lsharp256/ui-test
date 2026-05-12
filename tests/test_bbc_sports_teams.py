@@ -1,12 +1,11 @@
 from playwright.sync_api import Page, expect
 
-SCORES_FIXTURES_URL = "https://www.bbc.co.uk/sport/football/scores-fixtures"
 FIXTURE_SELECTOR = ".sp-c-fixture"
 TEAM_NAME_SELECTOR = ".qa-full-team-name"
 
 
-def test_bbc_football_fixtures(page: Page) -> None:
-    page.goto(SCORES_FIXTURES_URL, wait_until="domcontentloaded")
+def test_bbc_football_fixtures(scores_fixtures_page: Page) -> None:
+    page = scores_fixtures_page
 
     fixtures = page.locator(FIXTURE_SELECTOR)
     expect(fixtures.first).to_be_visible()

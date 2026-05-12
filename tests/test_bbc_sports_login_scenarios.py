@@ -1,7 +1,6 @@
 import pytest
 from playwright.sync_api import Page, expect
 
-SCORES_FIXTURES_URL = "https://www.bbc.co.uk/sport/football/scores-fixtures"
 USERNAME_INPUT_SELECTOR = "#user-identifier-input"
 PASSWORD_INPUT_SELECTOR = "#password-input"
 SUBMIT_BUTTON_SELECTOR = "#submit-button"
@@ -60,9 +59,9 @@ def get_visible_error_message(page: Page) -> str:
 
 @pytest.mark.parametrize(("username", "password", "expected_error"), SCENARIOS)
 def test_login_negative_scenarios(
-    page: Page, username: str, password: str, expected_error: str
+    scores_fixtures_page: Page, username: str, password: str, expected_error: str
 ) -> None:
-    page.goto(SCORES_FIXTURES_URL, wait_until="domcontentloaded")
+    page = scores_fixtures_page
     page.locator("#idcta-username").click()
 
     page.locator(USERNAME_INPUT_SELECTOR).fill(username)

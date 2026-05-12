@@ -1,13 +1,12 @@
 from playwright.sync_api import Page, expect
 
-SCORES_FIXTURES_URL = "https://www.bbc.co.uk/sport/football/scores-fixtures"
 SEARCH_BUTTON_SELECTOR = ".ux-v5"
 SEARCH_INPUT_SELECTOR = "#search-input"
 RESULT_LINK_SELECTOR = 'a[href^="https://www.bbc.co.uk/programmes/"]'
 
 
-def test_sports_search(page: Page) -> None:
-    page.goto(SCORES_FIXTURES_URL, wait_until="domcontentloaded")
+def test_sports_search(scores_fixtures_page: Page) -> None:
+    page = scores_fixtures_page
 
     page.locator(SEARCH_BUTTON_SELECTOR).click()
     search_bar = page.locator(SEARCH_INPUT_SELECTOR)
